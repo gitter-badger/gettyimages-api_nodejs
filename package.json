@@ -29,6 +29,6 @@
     "url": "git://github.com/gettyimages/gettyimages-api_nodejs.git"
   },
   "scripts": {
-    "test": "cucumber-js --require test/support --require test/step_definitions features/authentication.feature features/collections.feature features/ImageSearch.feature"
+    "test": "cucumber-js --require test/support --require test/step_definitions features/authentication.feature features/collections.feature"
   }
 }
