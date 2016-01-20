@@ -3,10 +3,11 @@ var Download = require('./lib/download.js')
 var Images = require('./lib/images.js')
 var SdkException = require('./lib/sdkexception.js')
 var Search = require('./lib/search.js')
+var Collections = require("./lib/collections");
 
 module.exports = ConnectSdk
 
-function ConnectSdk(apiKey, apiSecret, username, password, hostName) {
+function ConnectSdk(apiKey, apiSecret, username, password, refreshToken, hostName) {
 
 	if (!apiKey) {
 		throw new SdkException('must specify an apiKey')
@@ -17,30 +18,44 @@ function ConnectSdk(apiKey, apiSecret, username, password, hostName) {
 	}
 	
 	if (!hostName) {
-		hostName = 'connect.gettyimages.com'
+		hostName = 'api.gettyimages.com'
 	}
 	
-	var credentials = new Credentials(apiKey, apiSecret, username, password, hostName)
+	var credentials = new Credentials(apiKey, apiSecret, username, password, refreshToken, hostName)
 	
 	this.download = function() {
 		return new Download(credentials, hostName)
 	}
 
 	this.getAccessToken = function(next) {
-		credentials.getAccessToken(function(err, accessToken) {
-			if (err) {
-				next(err, null)
-			} else {
-				next(null, accessToken)
-			}
-		})
+		if (credentials.getRefreshToken()) {
+			credentials.refreshAccessToken(function(err, accessToken) {
+				if (err) {
+					next(err, null)
+				} else {
+					next(null, accessToken)
+				}
+			});
+		} else {
+			credentials.getAccessToken(function(err, accessToken) {
+				if (err) {
+					next(err, null)
+				} else {
+					next(null, accessToken)
+				}
+			});
+		}
 	}
 
 	this.images = function() {
-		return new Images(credentials, hostName)
+		return new Images(credentials, hostName);
 	}
 
 	this.search = function() {
-		return new Search(credentials, hostName)
+		return new Search(credentials, hostName);
+	}
+	
+	this.collections = function() {
+		return new Collections(credentials, hostName);
 	}
 }
